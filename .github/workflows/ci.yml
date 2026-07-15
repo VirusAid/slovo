@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-gcc
+            os: ubuntu-latest
+            cmake_flags: ""
+          - name: ubuntu-gcc-curl
+            os: ubuntu-latest
+            cmake_flags: "-DSLOVO_USE_CURL=ON"
+            apt: libcurl4-openssl-dev
+          - name: macos-clang
+            os: macos-latest
+            cmake_flags: ""
+          - name: windows-msvc
+            os: windows-latest
+            cmake_flags: ""
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install packages
+        if: matrix.apt != ''
+        run: sudo apt-get update && sudo apt-get install -y ${{ matrix.apt }}
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_flags }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure

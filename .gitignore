@@ -1,0 +1,10 @@
+build/
+cmake-build-*/
+*.exe
+*.o
+*.obj
+.vs/
+.vscode/
+.idea/
+compile_commands.json
+tests/build_err.txt
